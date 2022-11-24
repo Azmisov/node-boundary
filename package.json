@@ -1,0 +1,28 @@
+{
+  "name": "node-boundary",
+  "version": "0.1.0",
+  "description": "",
+  "main": "boundary.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azmisov/node-boundary.git"
+  },
+  "keywords": [
+    "range",
+    "staticrange",
+    "anchor",
+    "dom"
+  ],
+  "author": "Isaac Nygaard",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Azmisov/node-boundary/issues"
+  },
+  "homepage": "https://github.com/Azmisov/node-boundary#readme",
+  "devDependencies": {
+    "clean-jsdoc-theme": "^4.1.8"
+  }
+}
