@@ -1,3 +1,5 @@
+/** TESTING */
+
 /** Boundary bit flags */
 const Flags = Object.freeze({
 	// for Boundary.side; magnitude matches DOM order
@@ -35,23 +37,24 @@ const Flags = Object.freeze({
 	POSITION_AFTER: 0b100000
 });
 
-/** Encodes a node boundary: a position inside the DOM tree, or what one might call an "anchor".
- * 	Every node has an opening and closing boundary; for HTML, this corresponds to the
- * 	opening/closing tag. A position is relative to one of these bounds. For example:
+/**
+ * Encodes a node boundary: a position inside the DOM tree, or what one might call an "anchor".
+ * Every node has an opening and closing boundary; for HTML, this corresponds to the
+ * opening/closing tag. A position is relative to one of these bounds. For example:
  * 	
- * 	```html
- * 	A<span>B C</span>D
- * 	```
+ * ```html
+ * A<span>B C</span>D
+ * ```
  * 
- * 	Each of the letters gives a position relative to the `<span>` Node. To select which one to use,
- * 	provide a `side` flag to `Boundary`:
- * 	- A: `BEFORE_OPEN`
- * 	- B: `AFTER_OPEN`
- * 	- C: `BEFORE_CLOSE`
- * 	- D: `AFTER_CLOSE`
+ * Each of the letters gives a position relative to the `<span>` Node. To select which one to use,
+ * provide a `side` flag to `Boundary`:
+ * - A: `BEFORE_OPEN`
+ * - B: `AFTER_OPEN`
+ * - C: `BEFORE_CLOSE`
+ * - D: `AFTER_CLOSE`
  * 
- * 	These are bit flags, so can use bitmasks for filtering. The flags are ordered numerically by
- * 	their DOM position, so you can do comparisons, e.g. `BEFORE_OPEN < AFTER_OPEN`.
+ * These are bit flags, so can use bitmasks for filtering. The flags are ordered numerically by
+ * their DOM position, so you can do comparisons, e.g. `BEFORE_OPEN < AFTER_OPEN`.
  */
 class Boundary{
 	#node;
@@ -67,13 +70,14 @@ class Boundary{
 		this.#side = side;
 	}
 
-	/** Create a node boundary; takes up to three arguments:
+	/**
+	 * Create a node boundary; takes up to three arguments:
 	 * @param {Boundary | [Node, Number] | [Node, Number, Number]} args one of three formats:
-	 * 	1. pass a `Boundary` to copy
-	 * 	2. pass a `Node` and one of BEFORE/AFTER_OPEN/CLOSE Flags
-	 * 	3. in the manner of Range/StaticRange interfaces, pass an anchor `Node`, an offset into that
-	 * 		anchor, and one of POSITION_BEFORE/AFTER, indicating which side of the anchor you wish
-	 * 		to get the boundary for
+	 * 1. pass a `Boundary` to copy
+	 * 2. pass a `Node` and one of BEFORE/AFTER_OPEN/CLOSE Flags
+	 * 3. in the manner of Range/StaticRange interfaces, pass an anchor `Node`, an offset into that
+	 *    anchor, and one of POSITION_BEFORE/AFTER, indicating which side of the anchor you wish
+	 *    to get the boundary for
 	 */
 	constructor(...args){
 		this.set(...args);
@@ -432,6 +436,8 @@ class Boundary{
  * 	mutations, as DOM changes within the range will not corrupt the range.
  */
 class BoundaryRange{
+	#start;
+	#end;
 	/** Create a new range
 	 * @param {Range | StaticRange | BoundaryRange | [Boundary, Boundary]} args one of these formats:
 	 * 	- *empty*: uninitialized range; set start/end manually before using the range

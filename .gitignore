@@ -1,1 +1,4 @@
 node_modules/*
+docs/*
+# just contains dev dependencies currently
+package-lock.json
