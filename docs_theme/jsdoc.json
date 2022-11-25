@@ -1,0 +1,35 @@
+{
+    "source":{
+        "include": ["./boundary.js"]
+    },
+    "sourceType": "module",
+    "plugins": ["plugins/markdown"],
+    "opts": {
+        "encoding": "utf8",
+        "readme": "./README.md",
+        "verbose": true,
+        "template": "node_modules/clean-jsdoc-theme",
+        "destination": "./docs/",
+        "theme_opts": {
+            "title": "Overview",
+            "include_css": ["./docs_theme/docs.css"],
+            "static_dir": ["./docs_theme/static"],
+            "default_theme": "dark",
+            "homepageTitle": "node-boundary",
+            "meta": [
+                {
+                    "name": "Author",
+                    "content": "Isaac Nygaard"
+                },
+                {
+                    "name": "Description",
+                    "content": "node-boundary"
+                }
+            ]
+        }
+    },
+    "markdown": {
+        "hardwrap": false,
+        "idInHeadings": true
+    }
+}

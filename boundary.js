@@ -1,5 +1,9 @@
 /** TESTING */
 
+/** An integer >= 0
+ * @typedef {number} PositiveInteger
+ */
+
 /** Boundary bit flags */
 const Flags = Object.freeze({
 	// for Boundary.side; magnitude matches DOM order
@@ -37,6 +41,13 @@ const Flags = Object.freeze({
 	POSITION_AFTER: 0b100000
 });
 
+/** Testing this out
+ * @typedef DirectArgs
+ * @type {Array}
+ * @prop {Node} node - reference node 
+ * @prop {Number} side - which side to go off of
+ */
+
 /**
  * Encodes a node boundary: a position inside the DOM tree, or what one might call an "anchor".
  * Every node has an opening and closing boundary; for HTML, this corresponds to the
@@ -47,7 +58,7 @@ const Flags = Object.freeze({
  * ```
  * 
  * Each of the letters gives a position relative to the `<span>` Node. To select which one to use,
- * provide a `side` flag to `Boundary`:
+ * provide a `side` flag to [Boundary]{@link Boundary} or [set]{@link Boundary#set}:
  * - A: `BEFORE_OPEN`
  * - B: `AFTER_OPEN`
  * - C: `BEFORE_CLOSE`
@@ -70,14 +81,16 @@ class Boundary{
 		this.#side = side;
 	}
 
-	/**
-	 * Create a node boundary; takes up to three arguments:
-	 * @param {Boundary | [Node, Number] | [Node, Number, Number]} args one of three formats:
-	 * 1. pass a `Boundary` to copy
-	 * 2. pass a `Node` and one of BEFORE/AFTER_OPEN/CLOSE Flags
-	 * 3. in the manner of Range/StaticRange interfaces, pass an anchor `Node`, an offset into that
-	 *    anchor, and one of POSITION_BEFORE/AFTER, indicating which side of the anchor you wish
-	 *    to get the boundary for
+	/** Create a node boundary; takes up to three arguments:
+	 * @param args - One of three formats:
+	 * 1. Pass a `Boundary` to copy
+	 * 2. Pass a `Node` and one of `BEFORE_OPEN`, `AFTER_OPEN`, `BEFORE_CLOSE`, `AFTER_CLOSE` flag
+	 * 3. In the manner of the builtin Range interface, pass an anchor `Node`, an offset into that
+	 *    anchor, and one of `POSITION_BEFORE` or `POSITION_AFTER` flag, indicating which side of
+	 *    the anchor you wish to get the boundary for. Since the Range interface uses text offsets
+	 * 	  for CharacterData nodes, if the first arg is CharacterData the offset will be ignored,
+	 * 	  instead setting the boundary to be outside. If you want to place the boundary inside a
+	 *    CharacterData node, set so directly using syntax #2.
 	 */
 	constructor(...args){
 		this.set(...args);
@@ -153,11 +166,13 @@ class Boundary{
 		return new Boundary(this);
 	}
 	/** Convert to an anchor, in the manner of the builtin Range/StaticRange interface.
-	 * @param {Boolean} text The Range interface switches to encoding text offsets for CharacterData
+	 * @param {boolean} [text=true] The Range interface switches to encoding text offsets for CharacterData
 	 *  nodes, as children are disallowed for these node types. Thus, an anchor/boundary *inside* a
 	 *  CharacterData node is not allowed for Range interface. Set this parameter to `true` to move
 	 *  a boundary inside a CharacterData node to the nearest outside boundary.
-	 * @returns {{node: Node, offset: Number}} node and offset inside that node
+	 * @returns {Object} An object with the following members:
+	 * - `node` (`Node`): a reference parent node
+	 * - `offset` (`number`): offset inside the node's childNodes list
 	 */
 	toAnchor(text=true){
 		if (!this.#node)
@@ -181,14 +196,15 @@ class Boundary{
 	}
 	/** Compare relative position of two boundaries
 	 * @param {Boundary} other boundary to compare with
-	 * @returns one of the following:
-	 * 	- `null` if the boundaries are from different DOM trees or the relative position can't be determined
-	 * 	- `0` if they are equal (see also `isEqual()` method for a faster equality check)
-	 * 	- `1` if this boundary is after `other`
-	 *  - `-1` if this boundary is before `other`
+	 * @returns {?Number} One of the following:
+	 * - `null` if the boundaries are from different DOM trees or the relative position can't be determined
+	 * - `0` if they are equal (see also [isEqual]{@link Boundary#isEqual} for a faster equality check)
+	 * - `1` if this boundary is after `other`
+	 * - `-1` if this boundary is before `other`
+	 * 
 	 * Note, two boundaries that are adjacent, but have differing nodes/boundaries are not
-	 * considered "equal". They have an implicit side to them. Use `isAdjacent()` method to check for
-	 * this case instead.
+	 * considered "equal". They have an implicit side to them. Use
+	 * [isAdjacent]{@link Boundary#isAdjacent} to check for this case instead.
 	 */
 	compare(other){
 		if (this.#node === other.#node)
@@ -241,7 +257,7 @@ class Boundary{
 	}
 	/** Check if boundary equals another
 	 * @param {Boundary} other boundary to compare with
-	 * @returns {Boolean} true if the boundaries are identical
+	 * @returns {boolean} true if the boundaries are identical
 	 */
 	isEqual(other){
 		return this.#node === other.#node && this.#side === other.#side;
@@ -249,7 +265,7 @@ class Boundary{
 	/** Check if this boundary directly precedes another, in other words, the two Boundary's
 	 * 	represent the same DOM insertion point
 	 * @param {Boundary} other boundary to compare with
-	 * @returns {Boolean} true if `other` is adjacent *following* `this`
+	 * @returns {boolean} true if `other` is adjacent *following* `this`
 	 */
 	isAdjacent(other){
 		// before_open <-> after_open are not adjacent since one is outside the node and the other inside
@@ -258,7 +274,7 @@ class Boundary{
 		return this.clone().next().isEqual(other);
 	}
 	/** Check if the boundary node is set (e.g. not null or undefined)
-	 * @returns {Boolean} true if boundary is not set
+	 * @returns {boolean} true if boundary is not set
 	 */
 	isNull(){ return !this.#node; }
 	/** Traverses to the nearest boundary point inside the node
@@ -562,7 +578,7 @@ class BoundaryRange{
 	}
 
 	/** Check if the range has been fully set (e.g. neither boundary is null)
-	 * @returns {Boolean} true if range is not set, or is only partially set
+	 * @returns {boolean} true if range is not set, or is only partially set
 	 */
 	isNull(){
 		return this.#start.isNull() || this.#end.isNull();
@@ -575,14 +591,14 @@ class BoundaryRange{
 	}
 	/** Check if the range is collapsed in the current DOM. The start/end boundaries must be equal,
 	 * 	or start/end must be adjacent to eachother (see `Boundary.isAdjacent()`)
-	 * @returns {Boolean} true if collapsed, otherwise false; if the start/end anchors
+	 * @returns {boolean} true if collapsed, otherwise false; if the start/end anchors
 	 * 	are disconnected or out-of-order, it returns false
 	 */
 	get collapsed(){
 		return this.#start.isEqual(this.#end) || this.#start.isAdjacent(this.#end);
 	}
 	/** Collapse the range to one of the boundary points
-	 * @param {Boolean} toStart if true collapses to the start anchor (after/after_close);
+	 * @param {boolean} [toStart=false] if true collapses to the start anchor (after/after_close);
 	 * 	if false (the default), collapses to the end anchor (before/before_open)
 	 */
 	collapse(toStart=false){
@@ -606,7 +622,7 @@ class BoundaryRange{
 	}
 	/** Set range to surround a single node
 	 * @param {Node} node the node to surround
-	 * @param {Boolean} exclusive see `normalize()`
+	 * @param {boolean} [exclusive=false] see `normalize()`
 	 */
 	selectNode(node, exclusive=false){
 		this.#start.set(node, Flags.BEFORE_OPEN);
@@ -620,7 +636,7 @@ class BoundaryRange{
 	 * 	Warning, for CharacterData nodes, you probably want to use selectNode instead,
 	 * 	since these nodes cannot have children
 	 * @param {Node} node node whose contents to enclose
-	 * @param {Boolean} exclusive see `normalize()`
+	 * @param {boolean} [exclusive=true] see `normalize()`
 	 */
 	selectNodeContents(node, exclusive=true){
 		this.#start.set(node, Flags.AFTER_OPEN);
@@ -642,7 +658,7 @@ class BoundaryRange{
 	 * 
 	 * 	For example, if you are encoding a range of mutations, you want to normalize the range to
 	 * 	be exclusive; that way, the mutated nodes inside the range will not affect the boundaries.
-	 * @param {Boolean} exclusive true for exclusive bounds, or false for inclusive
+	 * @param {boolean} [exclusive=true] true for exclusive bounds, or false for inclusive
 	 */
 	normalize(exclusive=true){
 		if (exclusive){

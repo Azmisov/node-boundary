@@ -1,0 +1,140 @@
+/* tighter tables */
+.params td, .params th, .props td, .props th{
+	padding:.5rem 1rem !important;
+}
+/* tighter text in general */
+p{
+	margin: .5rem 0 !important;
+}
+/* make source details smaller */
+.details{
+	margin-top:.4rem !important;
+	display:table;
+}
+.details dt{
+	min-width: 0 !important;
+}
+.details .details-item-container{
+	padding:.2rem 1rem !important;
+}
+/* fix lists */
+article ol, article ul, header ol, header ul{
+	list-style-type: square !important;
+	padding-left:2.25rem !important;
+}
+article ul li, article ol li{
+	padding: .25rem 0 !important;
+}
+/* visually separate headers from content */
+article>h3, .container-overview>h3 {
+	display: table;
+	border-left: 5px solid;
+	padding: 0 1.75rem 0 .75rem;
+	margin-top: 1rem;
+	border-radius:.2rem .5rem .5rem .2rem;
+	font-size:1.3rem !important;
+}
+.light .name, .light .name a{
+	color: rgb(0, 80, 232) !important;
+}
+.light article>h3, .light .container-overview>h3{
+	background-color: rgba(34, 79, 255, 0.12);
+}
+.dark .type-signature{
+	color: rgb(255, 99, 91) !important;
+}
+.dark .name, .dark .name a{ color: rgb(238, 137, 63) !important; }
+.dark article>h3, .dark .container-overview>h3{
+	background-color: rgba(238, 137, 63, .1);
+}
+article>:not(h1,h2,h3,h4,.container-overview), .container-overview>:not(h1,h2,h3,h4){
+	margin-left:1rem !important;
+}
+
+/* todo */
+.toc-link{ font-size: 1rem !important; }
+
+/* rebuild desktop layout */
+body{
+	display:flex;
+	justify-content: center;
+}
+body.dark{ background:url("./docs_theme/static/binding_dark.webp") repeat #1a1a1a;}
+body.light{ background:url("./docs_theme/static/binding_light.webp") repeat #ffffff;}
+.navbar-container {
+	/* some trickery to get this "inside" the toc container */
+	order:3;
+	position: relative !important;
+	z-index: 40 !important;
+	top: auto !important;
+	right: auto !important;
+	bottom: auto !important;
+	left: auto !important;
+	width: 0rem !important;
+	height: 6rem !important;
+	padding: 1rem 0 !important;
+	display: flex;
+	justify-content: left !important;
+}
+.sidebar-container{
+	order:1;
+	position:relative !important;
+	width: auto !important;
+	min-width:14rem;
+	max-width:20rem !important;
+	padding:0 !important;
+}
+.sidebar-items-container{ margin-top:1rem !important; }
+.sidebar-section-children-container, .sidebar-section-title{
+	border-radius: 0 !important;
+}
+.sidebar-title:hover{
+	background-color:#252525;
+}
+.dark .sidebar-container, .dark .toc-container{
+	box-shadow:0 0 1rem rgba(0,0,0,.65);
+	background-color: #222;
+}
+.light .sidebar-container, .light .toc-container{
+	box-shadow:0 0 1rem rgba(0,0,0,.3);
+	background-color: #f7f7f7;
+}
+.sidebar{
+	border-radius: 0 !important;
+	background-color:transparent;
+	overflow-y:auto;
+	height:100vh
+}
+.body-wrapper{
+	order:2;
+	z-index:20;
+}
+.light .body-wrapper{ background-color:#ffffff; }
+.dark .body-wrapper{ background-color:#1a1a1a; }
+.main-content{
+	padding:0 !important;
+}
+.main-wrapper{
+	padding:1rem 3.5rem !important;
+	max-width:60rem !important;
+	min-width:40rem !important;
+}
+.toc-container{
+	order:4;
+	position:relative !important;
+	width:auto !important;
+	min-width:14rem;
+	max-width:20rem !important;
+	top:auto !important;
+	right:auto !important;
+	bottom:auto !important;
+	padding:0 1rem;
+	overflow-x:hidden;
+	overflow-y:auto;
+	height:100vh;
+}
+.toc-content{
+	padding-top:6rem !important;
+}
+.toc-content>:first-child{ display: none; }
+.toc-content>:last-child{ margin-top: 0 !important; }
