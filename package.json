@@ -5,7 +5,7 @@
   "main": "boundary.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docs": "jsdoc --configure docs_theme/jsdoc.json --verbose"
+    "docs": "jsdoc --configure docs_theme/jsdoc_config.js"
   },
   "repository": {
     "type": "git",
