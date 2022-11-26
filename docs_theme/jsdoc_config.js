@@ -19,6 +19,10 @@ module.exports = {
         "include": ["./boundary.js"]
     },
     "sourceType": "module",
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
     "plugins": ["plugins/markdown"],
     "opts": {
         "encoding": "utf8",

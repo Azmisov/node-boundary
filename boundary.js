@@ -41,24 +41,17 @@ const Flags = Object.freeze({
 	POSITION_AFTER: 0b100000
 });
 
-/** Testing this out
- * @typedef DirectArgs
- * @type {Array}
- * @prop {Node} node - reference node 
- * @prop {Number} side - which side to go off of
- */
-
 /**
- * Encodes a node boundary: a position inside the DOM tree, or what one might call an "anchor".
- * Every node has an opening and closing boundary; for HTML, this corresponds to the
- * opening/closing tag. A position is relative to one of these bounds. For example:
+ * Encodes a node boundary. Every node has an opening and closing boundary; for HTML, this
+ * corresponds to the opening/closing tag. There is also an inner and outer half to each boundary,
+ * denoting the bounds for a node's children and siblings respectively. For example:
  * 	
  * ```html
  * A<span>B C</span>D
  * ```
  * 
- * Each of the letters gives a position relative to the `<span>` Node. To select which one to use,
- * provide a `side` flag to [Boundary]{@link Boundary} or [set]{@link Boundary#set}:
+ * Each of the letters illustrates a different boundary in reference to the `<span>` node. When defining a
+ * Boundary, you specify a reference node, and one of four sides:
  * - A: `BEFORE_OPEN`
  * - B: `AFTER_OPEN`
  * - C: `BEFORE_CLOSE`
@@ -97,8 +90,6 @@ class Boundary{
 	}
 	/** Update boundary values. Same arguments as the constructor */
 	set(...args){
-		// I've disabled input validation for now, since the node/boundary props are currently
-		// directly accessable; so wouldn't be fully enforced anyways
 		switch (args.length){
 			case 1:
 				const o = args[0];
@@ -166,10 +157,21 @@ class Boundary{
 		return new Boundary(this);
 	}
 	/** Convert to an anchor, in the manner of the builtin Range/StaticRange interface.
-	 * @param {boolean} [text=true] The Range interface switches to encoding text offsets for CharacterData
-	 *  nodes, as children are disallowed for these node types. Thus, an anchor/boundary *inside* a
-	 *  CharacterData node is not allowed for Range interface. Set this parameter to `true` to move
-	 *  a boundary inside a CharacterData node to the nearest outside boundary.
+	 * 
+	 * ```js
+	 * const {node, offset} = boundary.toAnchor();
+	 * const range = new Range();
+	 * range.setStart(node, offset);
+	 * ```
+	 * 
+	 * @param {boolean} [text=true] The Range interface switches to encoding text offsets for
+	 *  CharacterData nodes, instead of encoding a child offset like other node types. We allow a
+	 *  boundary inside a CharacterData node though, so these boundaries can't be represented with
+	 *  Range.
+	 * 
+	 *  Set this parameter to `true` to use nearest outside boundary for CharacterData nodes, which
+	 *  is what makes more sense for use with Range. Set this to `false` to do no conversion, which
+	 *  can be useful if you are not using the anchor with Range.
 	 * @returns {Object} An object with the following members:
 	 * - `node` (`Node`): a reference parent node
 	 * - `offset` (`number`): offset inside the node's childNodes list
@@ -196,7 +198,7 @@ class Boundary{
 	}
 	/** Compare relative position of two boundaries
 	 * @param {Boundary} other boundary to compare with
-	 * @returns {?Number} One of the following:
+	 * @returns {?number} One of the following:
 	 * - `null` if the boundaries are from different DOM trees or the relative position can't be determined
 	 * - `0` if they are equal (see also [isEqual]{@link Boundary#isEqual} for a faster equality check)
 	 * - `1` if this boundary is after `other`
@@ -226,13 +228,13 @@ class Boundary{
 	}
 	/** See where the boundary sits relative to a Node. This just tells if the boundary is inside,
 	 * 	before, or after the node. For more detailed comparisons, create a Boundary for `node` to
-	 * 	compare with instead (see `compare()`).
+	 * 	compare with instead (see [compare]{@link Boundary#compare}).
 	 * @param {Node} node node to compare with
-	 * @returns one of the following:
-	 * 	- `null` if the boundary is null, in a different DOM tree than node, or the relative postiion can't be determined
-	 *  - `POSITION_BEFORE` if the boundary comes before `node` in DOM order
-	 *  - `POSITION_INSIDE` if the boundary is inside `node`
-	 *  - `POSITION_AFTER` if the boundary comes after `node` in DOM order
+	 * @returns {?number} One of the following:
+	 * - `null` if the boundary is null, in a different DOM tree than node, or the relative postiion can't be determined
+	 * - `POSITION_BEFORE` if the boundary comes before `node` in DOM order
+	 * - `POSITION_INSIDE` if the boundary is inside `node`
+	 * - `POSITION_AFTER` if the boundary comes after `node` in DOM order
 	 */	
 	compareNode(node){
 		if (node === this.#node){
@@ -355,14 +357,24 @@ class Boundary{
 		}
 		return this;
 	}
-	/** Generator that yields a Boundary for each unique node. Unlike `next()` this method
-	 * 	tracks which nodes have been visited, and only emits their first boundary encountered.
-	 * 	This method is meant to mimic `TreeWalker`, but instead always doing a preorder traversal
-	 * 	(except when traversing to an unseen parentNode, which will technically be postorder).
+	/** Generator that yields a Boundary for each unique node. Unlike [next]{@link Boundary#next}
+	 * this method tracks which nodes have been visited, and only emits their first boundary
+	 * encountered. This method is meant to mimic the single node traversal of `TreeWalker`, but it
+	 * yields a node when one of its boundaries is crossed. *(Essentially doing a preorder traversal
+	 * regardless of direction, except when traversing an unseen parentNode, which will be
+	 * postorder).* For example:
 	 * 
-	 *	For efficiency, `this` is modified just as with `next()`; clone the emitted Boundary if you
-	 * 	need a copy.
-	 * @yields {Boundary} modified `this`
+	 * ```html
+	 * <main> <article>| </article> </main>
+	 * ```
+	 * 
+	 * When starting at the caret, `(article, BEFORE_CLOSE)` and `(main, BEFORE_CLOSE)` will be
+	 * emitted.
+	 * 
+	 * For efficiency, `this` is modified just as with [next]{@link Boundary#next};
+	 * [clone]{@link Boundary#clone} the emitted Boundary if you need a copy.
+	 * @yields {Boundary} modified `this`; traversal continues until a their is neither sibling or
+	 * parent node, in which case the node is set to null
 	 */
 	*nextNodes(){
 		if (!this.#node) return;
@@ -393,8 +405,8 @@ class Boundary{
 			else return;
 		}
 	}
-	/** Same as `nextNodes()`, but traversing in the previous direction. See docs for `nextNodes()`
-	 * @yields {Boundary} modified `this`
+	/** Same as [nextNodes]{@link Boundary#nextNodes}, but traversing in the previous direction
+	 * @yield {Boundary} modified `this`
 	 */
 	*previousNodes(){
 		if (!this.#node) return;
