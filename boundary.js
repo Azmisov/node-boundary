@@ -1,11 +1,10 @@
-/** TESTING */
-
-/** An integer >= 0
- * @typedef {number} PositiveInteger
+/** Boundary bit flags. Use these to define and work with a boundary's side
+ * @see {@link Boundary#side}
+ * @readonly
+ * @enum
+ * @alias BoundaryFlags
  */
-
-/** Boundary bit flags */
-const Flags = Object.freeze({
+const Flags = {
 	// for Boundary.side; magnitude matches DOM order
 	/** Denotes a position before the opening boundary of a node (outside the node) */
 	BEFORE_OPEN: 0b1,
@@ -39,7 +38,7 @@ const Flags = Object.freeze({
 	POSITION_INSIDE: 0b100,
 	/** Used to indicate a Boundary that is after a node; `POSITION_AFTER > AFTER_CLOSE` */
 	POSITION_AFTER: 0b100000
-});
+};
 
 /**
  * Encodes a node boundary. Every node has an opening and closing boundary; for HTML, this
@@ -63,12 +62,16 @@ const Flags = Object.freeze({
 class Boundary{
 	#node;
 	#side;
-	/** validate side flag */
+	/** validate side flag
+	 * @private
+	 */
 	static #valid_side(b){
 		return b == Flags.BEFORE_OPEN || b == Flags.AFTER_OPEN ||
 			b == Flags.BEFORE_CLOSE || b == Flags.AFTER_CLOSE;
 	}
-	/** set node and side together */
+	/** set node and side together
+	 * @private
+	 */
 	#set(node, side){
 		this.#node = node;
 		this.#side = side;
@@ -77,9 +80,10 @@ class Boundary{
 	/** Create a node boundary; takes up to three arguments:
 	 * @param args - One of three formats:
 	 * 1. Pass a `Boundary` to copy
-	 * 2. Pass a `Node` and one of `BEFORE_OPEN`, `AFTER_OPEN`, `BEFORE_CLOSE`, `AFTER_CLOSE` flag
+	 * 2. Pass a `Node` and one of {@link BoundaryFlags.BEFORE_OPEN|BEFORE_OPEN}, {@link BoundaryFlags.AFTER_OPEN|AFTER_OPEN},
+	 *    {@link BoundaryFlags.BEFORE_CLOSE|BEFORE_CLOSE}, or {@link BoundaryFlags.AFTER_CLOSE|AFTER_CLOSE} flag
 	 * 3. In the manner of the builtin Range interface, pass an anchor `Node`, an offset into that
-	 *    anchor, and one of `POSITION_BEFORE` or `POSITION_AFTER` flag, indicating which side of
+	 *    anchor, and one of {@link BoundaryFlags.POSITION_BEFORE|POSITION_BEFORE} or {@link BoundaryFlags.POSITION_AFTER|POSITION_AFTER} flag, indicating which side of
 	 *    the anchor you wish to get the boundary for. Since the Range interface uses text offsets
 	 * 	  for CharacterData nodes, if the first arg is CharacterData the offset will be ignored,
 	 * 	  instead setting the boundary to be outside. If you want to place the boundary inside a
@@ -88,7 +92,7 @@ class Boundary{
 	constructor(...args){
 		this.set(...args);
 	}
-	/** Update boundary values. Same arguments as the constructor */
+	/** Update boundary values. Same arguments as the [constructor]{@link Boundary#Boundary} */
 	set(...args){
 		switch (args.length){
 			case 1:
@@ -138,14 +142,19 @@ class Boundary{
 		}
 	}
 	// Property access
-	/** @returns {Node} node whose boundary we reference */
+	/** node whose boundary we reference
+	 * @type {Node}
+	 */
 	get node(){ return this.#node; }
 	set node(node){
 		if (!(node instanceof Node || node === null))
 			throw TypeError("node must be a Node or null");
 		this.#node = node;
 	}
-	/** @returns {Number} bit flag giving which side of the node our boundary is for */
+	/** bit flag giving which side of the node our boundary is for; this is one of
+	 * {@link BoundaryFlags}
+	 * @type {Number}
+	 */
 	get side(){ return this.#side; }
 	set side(side){
 		if (!Boundary.#valid_side(side))
@@ -232,9 +241,9 @@ class Boundary{
 	 * @param {Node} node node to compare with
 	 * @returns {?number} One of the following:
 	 * - `null` if the boundary is null, in a different DOM tree than node, or the relative postiion can't be determined
-	 * - `POSITION_BEFORE` if the boundary comes before `node` in DOM order
-	 * - `POSITION_INSIDE` if the boundary is inside `node`
-	 * - `POSITION_AFTER` if the boundary comes after `node` in DOM order
+	 * - {@link BoundaryFlags.POSITION_BEFORE|POSITION_BEFORE} if the boundary comes before `node` in DOM order
+	 * - {@link BoundaryFlags.POSITION_INSIDE|POSITION_INSIDE} if the boundary is inside `node`
+	 * - {@link BoundaryFlags.POSITION_AFTER|POSITION_AFTER} if the boundary comes after `node` in DOM order
 	 */	
 	compareNode(node){
 		if (node === this.#node){
@@ -250,7 +259,7 @@ class Boundary{
 			if (p & Node.DOCUMENT_POSITION_CONTAINS)
 				return Flags.POSITION_INSIDE;
 			if (p & Node.DOCUMENT_POSITION_PRECEDING)
-				return Flags.POSITIN_AFTER;
+				return Flags.POSITION_AFTER;
 			if (p & Node.DOCUMENT_POSITION_FOLLOWING)
 				return Flags.POSITION_BEFORE;
 		}
@@ -264,10 +273,19 @@ class Boundary{
 	isEqual(other){
 		return this.#node === other.#node && this.#side === other.#side;
 	}
-	/** Check if this boundary directly precedes another, in other words, the two Boundary's
-	 * 	represent the same DOM insertion point
+	/** Check if this boundary directly precedes another, and is the same DOM insertion point. For
+	 * example, given the following DOM with letters representing boundaries:
+	 * 
+	 * ```html
+	 * <main>A B<article>C D<span>E F</span>G H</article>I J</main>
+	 * ```
+	 * 
+	 * The pairs (A,B), (C,D), (E,F), (G,H), and (I,J) are considered "adjacent". While they
+	 * represent the same DOM position, they differ in whether they are in reference to the
+	 * preceding or following node. The preceding boundary will always have an "AFTER" side, with
+	 * the adjacent following boundary having a "BEFORE" side (see {@link BoundaryFlags}).
 	 * @param {Boundary} other boundary to compare with
-	 * @returns {boolean} true if `other` is adjacent *following* `this`
+	 * @returns {boolean} true if `other` is adjacent *and* following `this`
 	 */
 	isAdjacent(other){
 		// before_open <-> after_open are not adjacent since one is outside the node and the other inside
@@ -275,11 +293,18 @@ class Boundary{
 			return false;
 		return this.clone().next().isEqual(other);
 	}
-	/** Check if the boundary node is set (e.g. not null or undefined)
+	/** Check if the boundary node is set (e.g. not null). A null reference node is allowed, and can
+	 * be used to signal the end of DOM traversal or an unset Boundary.
 	 * @returns {boolean} true if boundary is not set
 	 */
 	isNull(){ return !this.#node; }
-	/** Traverses to the nearest boundary point inside the node
+	/** Traverses to the nearest boundary point inside the node. For example:
+	 * 
+	 * ```html
+	 * A<span>B C</span>D
+	 * ```
+	 * 
+	 * A would become B and D would become C.
 	 * @returns {Boundary} modified `this`
 	 */
 	inside(){
@@ -293,7 +318,8 @@ class Boundary{
 		}
 		return this;
 	}
-	/** Traverses to the nearest boundary point outside the node
+	/** Traverses to the nearest boundary point outside the node.
+	 * Performs the inverse of {@link Boundary#inside|inside}
 	 * @returns {Boundary} modified `this`
 	 */
 	outside(){
@@ -307,7 +333,14 @@ class Boundary{
 		}
 		return this;
 	}	
-	/** Traverses to the next boundary point
+	/** Traverses to the next boundary point. For example:
+	 * 
+	 * ```html
+	 * A<span>B C</span>D
+	 * ```
+	 * 
+	 * Given a boundary starting at A, traversal would proceed to B, C, D, and finally null
+	 * to signal an end to traversal.
 	 * @returns {Boundary} modified `this`
 	 */
 	next(){
@@ -332,7 +365,8 @@ class Boundary{
 		}
 		return this;
 	}
-	/** Traverses to the previous boundary point
+	/** Traverses to the previous boundary point.
+	 * Performs the inverse of {@link Boundary#next|next}
 	 * @returns {Boundary} modified `this`
 	 */
 	previous(){
@@ -357,30 +391,38 @@ class Boundary{
 		}
 		return this;
 	}
-	/** Generator that yields a Boundary for each unique node. Unlike [next]{@link Boundary#next}
-	 * this method tracks which nodes have been visited, and only emits their first boundary
-	 * encountered. This method is meant to mimic the single node traversal of `TreeWalker`, but it
-	 * yields a node when one of its boundaries is crossed. *(Essentially doing a preorder traversal
-	 * regardless of direction, except when traversing an unseen parentNode, which will be
-	 * postorder).* For example:
+	/** Generator that yields a Boundary for each unique node when traversing in the "next"
+	 * direction. Unlike {@link Boundary#next|next} this method tracks which nodes have been
+	 * visited, and only emits their first boundary encountered. This method is meant to mimic the
+	 * single node traversal of `TreeWalker`, but it yields a node when any of its boundaries is
+	 * crossed. *(Essentially doing a preorder traversal regardless of direction, except when
+	 * traversing an unseen parentNode, which will be postorder).* For example:
 	 * 
 	 * ```html
-	 * <main> <article>| </article> </main>
+	 * A <main>B C<article>D E</article>F G</main>H
 	 * ```
 	 * 
-	 * When starting at the caret, `(article, BEFORE_CLOSE)` and `(main, BEFORE_CLOSE)` will be
-	 * emitted.
+	 * Given a boundary starting with...
+	 * - C: yield C, G, null
+	 * - D: yield E, G, null
 	 * 
-	 * For efficiency, `this` is modified just as with [next]{@link Boundary#next};
-	 * [clone]{@link Boundary#clone} the emitted Boundary if you need a copy.
-	 * @yields {Boundary} modified `this`; traversal continues until a their is neither sibling or
-	 * parent node, in which case the node is set to null
+	 * Note that the yielded {@link Boundary#side|side} will always be {@link BoundaryFlags.BEFORE_OPEN|BEFORE_OPEN}
+	 * or {@link BoundaryFlags.BEFORE_OPEN|BEFORE_CLOSE}. If the current Boundary is one of these types,
+	 * it will be yielded first by default.
+	 * 
+	 * @param {boolean} [include_start=true] whether to yield the starting Boundary if it is of type "BEFORE"
+	 * @yields {Boundary} Modified `this`; traversal continues until there is neither sibling or
+	 * parent node, in which case the node is set to null. If you need a copy for each iteration,
+	 * [clone]{@link Boundary#clone} the emitted Boundary.
 	 */
-	*nextNodes(){
-		if (!this.#node) return;
+	*nextNodes(include_start=true){
 		// always BEFORE_OPEN or BEFORE_CLOSE; need to convert start bounds to this
-		if (this.#side & Flags.FILTER_AFTER)
+		const after = this.#side & Flags.FILTER_AFTER;
+		if (after || !include_start){
 			this.next();
+			if (!after)
+				this.next();
+		}
 		if (!this.#node) return;
 		yield this;
 		let depth = 0, n;
@@ -405,14 +447,19 @@ class Boundary{
 			else return;
 		}
 	}
-	/** Same as [nextNodes]{@link Boundary#nextNodes}, but traversing in the previous direction
+	/** Performs the inverse of {@link Boundary@nextNodes|nextNodes}. Note that when traversing in
+	 * the previous direction, the side will always be one of
+	 * {@link BoundaryFlags.AFTER_OPEN|AFTER_OPEN} or {@link BoundaryFlags.AFTER_CLOSE|AFTER_CLOSE}
 	 * @yield {Boundary} modified `this`
 	 */
-	*previousNodes(){
-		if (!this.#node) return;
+	*previousNodes(include_start=true){
 		// always AFTER_OPEN or AFTER_CLOSE; need to convert start bounds to this
-		if (this.#side & Flags.FILTER_BEFORE)
+		const before = this.#side & Flags.FILTER_BEFORE;
+		if (before || !include_start){
 			this.previous();
+			if (!before)
+				this.previous();
+		}
 		if (!this.#node) return;
 		yield this;
 		let depth = 0, n;
@@ -459,7 +506,7 @@ class Boundary{
 }
 
 /** Similar to builtin Range or StaticRange interfaces, but encodes the start/end of the range using
- * 	`Boundary`. The anchors are not specified as an offset into a parent's children, so the range
+ * 	{@link Boundary}. The anchors are not specified as an offset into a parent's children, so the range
  * 	is robust to modifications of the DOM. In particular, you can use this to encode bounds for
  * 	mutations, as DOM changes within the range will not corrupt the range.
  */
@@ -467,15 +514,17 @@ class BoundaryRange{
 	#start;
 	#end;
 	/** Create a new range
-	 * @param {Range | StaticRange | BoundaryRange | [Boundary, Boundary]} args one of these formats:
-	 * 	- *empty*: uninitialized range; set start/end manually before using the range
-	 * 	- `Range` or `StaticRange`: converts from a Range, defaulting to an "exclusive" range,
-	 * 		see `normalize()`
-	 * 	- `BoundaryRange`: equivalent to `cloneRange()`
-	 * 	- `[Boundary, Boundary`]: set the start/end anchors to be a copy of these boundaries
+	 * @param {Range|StaticRange|BoundaryRange|Boundary[]} args One of these formats:
+	 * - *empty*: uninitialized range; you should set start/end manually before using the range
+	 * - `Range` or `StaticRange`: converts from a Range, defaulting to an "exclusive" range,
+	 *	  see `normalize()`
+	 * - `BoundaryRange`: equivalent to {@link BoundaryRange#cloneRange|cloneRange}
+	 * - `[Boundary, Boundary]`: set the start/end anchors to be a copy of these boundaries
 	 * 
-	 *  For more control over itialization, leave args empty and use `setStart()` and `setEnd()` instead.
-	 * 	You may also set `start`/`end` to a Boundary directly if desired.
+	 * For more control over initialization, leave args empty and use
+	 * {@link BoundaryRange#setStart|setStart} and {@link BoundaryRange#setEnd|setEnd} instead. You
+	 * may also directly manipulate or assign {@link BoundaryRange#start|start} or {@link BoundaryRange#start|end}
+	 * if desired.
 	 */
 	constructor(...args){		
 		this.#start = new Boundary();
@@ -501,7 +550,9 @@ class BoundaryRange{
 				break;
 		}
 	}
-	/** @returns {Boundary} start of the range */
+	/** Start of the range. You can access or assign this directly as needed
+	 * @type {Boundary}
+	 */
 	get start(){ return this.#start; }
 	set start(b){
 		if (!(b instanceof Boundary))
@@ -509,7 +560,9 @@ class BoundaryRange{
 	}
 	/** Update start anchor; equivalent to `this.start.set()` */
 	setStart(...args){ this.#start.set(...args); }
-	/** @returns {Boundary} end of the range */
+	/** End of the range. You can access or assign this directly as needed
+	 * @type {Boundary}
+	 */
 	get end(){ return this.#end; }
 	set end(b){
 		if (!(b instanceof Boundary))
@@ -522,9 +575,10 @@ class BoundaryRange{
 	cloneRange(){
 		return new BoundaryRange(this);
 	}
-	/** Convert to Range interface. Range's end is set last, so if the resulting range's
-	 * 	anchors would be out of order, it would get collapsed to the end anchor. Boundaries inside
-	 *	a CharacterData node are treated as outside for conversion purposes.
+	/** Convert to `Range` interface. Range's end is set last, so if the resulting range's
+	 * anchors would be out of order, it would get collapsed to the end anchor. Boundaries inside
+	 * a CharacterData node are treated as outside for conversion purposes. If the current BoundaryRange
+	 * {@link BoundaryRange#isNull|isNull}, an uninitialized Range will be returned.
 	 * @returns {Range}
 	 */
 	toRange(){
@@ -571,8 +625,10 @@ class BoundaryRange{
 		}
 		return r;
 	}
-	/** Convert to StaticRange interface. Boundaries inside a CharacterData node are treated as
+	/** Convert to `StaticRange` interface. Boundaries inside a CharacterData node are treated as
 	 * 	outside for conversion purposes.
+	 * @throws {Error} if the current BoundaryRange {@link BoundaryRange#isNull|isNull}, since a
+	 * 	`StaticRange` cannot be created uninitialized
 	 * @returns {StaticRange}
 	 */
 	toStaticRange(){
@@ -589,7 +645,8 @@ class BoundaryRange{
 		});
 	}
 
-	/** Check if the range has been fully set (e.g. neither boundary is null)
+	/** Check if the range has been fully set, e.g. neither boundary is null
+	 * @see {@link Boundary#isNull}
 	 * @returns {boolean} true if range is not set, or is only partially set
 	 */
 	isNull(){
@@ -602,16 +659,21 @@ class BoundaryRange{
 		return this.#start.isEqual(other.start) && this.#end.isEqual(other.end);
 	}
 	/** Check if the range is collapsed in the current DOM. The start/end boundaries must be equal,
-	 * 	or start/end must be adjacent to eachother (see `Boundary.isAdjacent()`)
-	 * @returns {boolean} true if collapsed, otherwise false; if the start/end anchors
-	 * 	are disconnected or out-of-order, it returns false
+	 * or start/end must be adjacent to eachother (see {@link Boundary#isAdjacent}). True if
+	 * collapsed, else false; if the start/end anchors are disconnected or out-of-order, it returns
+	 * false
+	 * @type {boolean}
 	 */
 	get collapsed(){
 		return this.#start.isEqual(this.#end) || this.#start.isAdjacent(this.#end);
 	}
-	/** Collapse the range to one of the boundary points
-	 * @param {boolean} [toStart=false] if true collapses to the start anchor (after/after_close);
-	 * 	if false (the default), collapses to the end anchor (before/before_open)
+	/** Collapse the range to one of the boundary points. After calling this method, the start
+	 * anchor will equal the end: `this.start.isEqual(this.end)` (see {@link Boundary#isEqual}). If
+	 * you would like to instead collapse with the start/end anchors *adjacent* (see
+	 * {@link Boundary#isAdjacent}), then follow with a call to
+	 * {@link BoundaryRange#normalize|normalize}.
+	 * @param {boolean} [toStart=false] If true, collapses to the {@link BoundaryRange#start|start};
+	 * otherwise collapses to {@link BoundaryRange#end|end}
 	 */
 	collapse(toStart=false){
 		if (toStart)
@@ -645,8 +707,8 @@ class BoundaryRange{
 		}
 	}
 	/** Set range to surround the contents of a node;
-	 * 	Warning, for CharacterData nodes, you probably want to use selectNode instead,
-	 * 	since these nodes cannot have children
+	 * Warning, for CharacterData nodes, you probably want to use selectNode instead,
+	 * since these nodes cannot have children
 	 * @param {Node} node node whose contents to enclose
 	 * @param {boolean} [exclusive=true] see `normalize()`
 	 */
@@ -659,17 +721,17 @@ class BoundaryRange{
 		}
 	}
 	/** Every boundary has one adjacent boundary at the same position. On one side you have the
-	 *  AFTER_OPEN/AFTER_CLOSE bounds, and following it will be a BEFORE_OPEN/BEFORE_CLOSE bounds.
-	 *  See `Boundary.isAdjacent()`. The start/end anchors can use either boundary and the range is
-	 *  equivalent. There are two normalization modes:
+	 * AFTER_OPEN/AFTER_CLOSE bounds, and following it will be a BEFORE_OPEN/BEFORE_CLOSE bounds.
+	 * See `Boundary.isAdjacent()`. The start/end anchors can use either boundary and the range is
+	 * equivalent. There are two normalization modes:
 	 * 
-	 * 	- **exclusive**: start/end anchor boundaries are outside the range; e.g. start boundary is
-	 * 		AFTER and end boundary is BEFORE type
-	 * 	- **inclusive**: start/end anchor boundaries are inside the range; e.g. start boundary is
-	 * 		BEFORE and end boundary is AFTER type
+	 * - **exclusive**: start/end anchor boundaries are outside the range; e.g. start boundary is
+	 * 	 AFTER and end boundary is BEFORE type
+	 * - **inclusive**: start/end anchor boundaries are inside the range; e.g. start boundary is
+	 * 	 BEFORE and end boundary is AFTER type
 	 * 
-	 * 	For example, if you are encoding a range of mutations, you want to normalize the range to
-	 * 	be exclusive; that way, the mutated nodes inside the range will not affect the boundaries.
+	 * For example, if you are encoding a range of mutations, you want to normalize the range to
+	 * be exclusive; that way, the mutated nodes inside the range will not affect the boundaries.
 	 * @param {boolean} [exclusive=true] true for exclusive bounds, or false for inclusive
 	 */
 	normalize(exclusive=true){
@@ -685,8 +747,35 @@ class BoundaryRange{
 			if (this.#end.side & Flags.FILTER_BEFORE)
 				this.#end.previous();
 		}
-	}	
+	}
+
+	// Comparison helper methods
+	/** Check if this range intersects with another
+	 * @param {BoundaryRange} other the range to compare with
+	 * @param {boolean} [inclusive=false] whether to consider the ranges intersecting if just
+	 * 	one of their start/end anchors are equal
+	 * @returns {boolean} true if the ranges intersect
+	 */
+	intersects(other, inclusive=false){
+		return (
+			this.start.compare(other.end) <= (inclusive-1) &&
+			this.end.compare(other.start) >= (1-inclusive)
+		);
+	}
+	/** Check if this range fully contains another
+	 * @param {BoundaryRange} other the range to compare with
+	 * @param {boolean} [inclusive=true] whether to consider the range fully contained if one of
+	 * 	its start/end anchors equals that of `this`
+	 * @returns {boolean} true if `other` is contained
+	 */
+	contains(other, inclusive=true){
+		return (
+			this.start.compare(other.start) <= (inclusive-1) &&
+			this.end.compare(other.end) >= (1-inclusive)
+		);
+	}
 }
 
 // could maybe rename it to NodeBoundaryXXX
-export { Flags as BoundaryFlags, Boundary, BoundaryRange };
+const Flags_readonly = Object.freeze(Flags);
+export { Flags_readonly as BoundaryFlags, Boundary, BoundaryRange };

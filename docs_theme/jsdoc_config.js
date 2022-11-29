@@ -60,6 +60,9 @@ module.exports = {
             ]
         }
     },
+    "templates": {
+        "cleverLinks": true,
+    },
     "markdown": {
         "hardwrap": false,
         "idInHeadings": true
