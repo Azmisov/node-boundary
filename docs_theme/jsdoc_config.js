@@ -16,7 +16,8 @@ const svg = {
 
 module.exports = {
     "source":{
-        "include": ["./boundary.js"]
+        "include": [p.main],
+        "includePattern": ".+\\.mjs$",
     },
     "sourceType": "module",
     "tags": {
@@ -34,6 +35,7 @@ module.exports = {
             "title": "Overview",
             "include_css": ["./docs_theme/docs.css"],
             "static_dir": ["./docs_theme/static"],
+            "base_url": p.homepage,
             "default_theme": "dark",
             "homepageTitle": p.name,
             "meta": [

@@ -1,29 +1,36 @@
 {
   "name": "node-boundary",
   "version": "0.1.0",
-  "description": "",
-  "main": "boundary.js",
+  "description": "A better interface for DOM anchors and ranges",
+  "main": "boundary.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "docs": "jsdoc --configure docs_theme/jsdoc_config.js"
+    "docs": "jsdoc --configure docs_theme/jsdoc_config.js",
+    "bundle": "rollup --config rollup.config.mjs"
   },
+  "browserslist": "> 0.25%, not dead",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Azmisov/node-boundary.git"
   },
   "keywords": [
-    "range",
-    "staticrange",
-    "anchor",
-    "dom"
+    "node", "element", "position", "Range", "StaticRange",
+    "anchor", "dom", "mutation"
   ],
   "author": "Isaac Nygaard",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/Azmisov/node-boundary/issues"
   },
-  "homepage": "https://github.com/Azmisov/node-boundary#readme",
+  "homepage": "https://azmisov.github.io/node-boundary/",
   "devDependencies": {
-    "clean-jsdoc-theme": "^4.1.8"
+    "@babel/preset-env": "^7.20.2",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.1.0",
+    "clean-jsdoc-theme": "=4.1.9",
+    "rollup": "^3.5.0"
+  },
+  "dependencies": {
+    "core-js": "^3.25.5"
   }
 }

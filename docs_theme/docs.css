@@ -4,6 +4,10 @@
 }
 p{ margin: .5rem 0 !important; }
 .pre-div{ margin: 1rem 0 !important; }
+article>.description, article>.container-overview>.description{
+	margin:.75rem 0 1rem 0 !important;
+}
+
 /* make details box smaller so it doesn't blend with params box */
 .details{
 	margin-top:.4rem !important;
@@ -15,6 +19,7 @@ p{ margin: .5rem 0 !important; }
 .details .details-item-container{
 	padding:.2rem 1rem !important;
 }
+
 /* fix lists */
 article ol, article ul, header ol, header ul{
 	list-style-type: square !important;
@@ -23,8 +28,9 @@ article ol, article ul, header ol, header ul{
 article ul li, article ol li{
 	padding: .25rem 0 !important;
 }
+
 /* visually separate headers from content */
-article>h3, .container-overview>h3 {
+article>h3.name, .container-overview>h3.name {
 	display: table;
 	border-left: 5px solid;
 	padding: 0 1.75rem 0 .75rem;
@@ -32,30 +38,32 @@ article>h3, .container-overview>h3 {
 	border-radius:.2rem .5rem .5rem .2rem;
 	font-size:1.3rem !important;
 }
-.light .name, .light .name a{
+.light .name, .light .name a, .light .method-member-container>strong:first-child, .light .member-item-container>strong:first-child{
 	color: rgb(0, 80, 232) !important;
 }
-.light article>h3, .light .container-overview>h3{
+.light article>h3.name, .light .container-overview>h3.name{
 	background-color: rgba(34, 79, 255, 0.12);
 }
 .dark .type-signature{
 	color: rgb(255, 99, 91) !important;
 }
-.dark .name, .dark .name a{ color: rgb(238, 137, 63) !important; }
-.dark article>h3, .dark .container-overview>h3{
+.dark .name, .dark .name a, .dark .method-member-container>strong:first-child, .dark .member-item-container>strong:first-child{
+	color: rgb(238, 137, 63) !important;
+}
+.dark article>h3.name, .dark .container-overview>h3.name{
 	background-color: rgba(238, 137, 63, .1);
 }
 article>:not(h1,h2,h3,h4,.container-overview), .container-overview>:not(h1,h2,h3,h4){
 	margin-left:1rem !important;
 }
+.member-item-container>strong:first-child, .method-member-container>strong:first-child{
+	font-weight:bolder;
+	text-decoration:underline;
+	margin-bottom:.5rem;
+	display:block;
+}
 
-/* todo */
-.toc-link{ font-size: 1rem !important; }
-
-/* REBUILD DESTOP LAYOUT
-	moving side panels adjacent to content so mouse doesn't have to move so much to navigate;
-
-*/
+/* REBUILD DESTOP LAYOUT */
 body{
 	display:flex;
 	justify-content: center;
