@@ -1,5 +1,4 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Publish to npm and docs to github pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -39,7 +38,6 @@ jobs:
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          dry-run: true
       # build and deploy docs
       - run: npm run docs
       - name: Setup Pages
