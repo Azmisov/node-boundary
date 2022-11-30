@@ -157,7 +157,7 @@ body.light{ background:url("./docs_theme/static/binding_light.webp") repeat #e6e
 	order:2;
 	z-index:20;
 	max-width:60rem !important;
-	min-width:40rem !important;
+	min-width:0rem !important;
 	flex-shrink: 1;
 }
 .light .body-wrapper{ background-color:#ffffff; }
@@ -192,12 +192,6 @@ body.light{ background:url("./docs_theme/static/binding_light.webp") repeat #e6e
 	margin: 0 !important;
 	padding-bottom: 2rem !important;
 }
-@media screen and (max-width: 100em){
-	.toc-container{ display: block !important; }
-}
-@media screen and (max-width: 65em){
-	.toc-container{ display: none !important; }
-}
 
 /* shadow/border so button separates from content more */
 .light #mobile-menu{
@@ -213,4 +207,17 @@ body.light{ background:url("./docs_theme/static/binding_light.webp") repeat #e6e
 }
 .mobile-nav-links{
 	padding:0 2rem !important;
+}
+
+/* fix very small screens */
+@media screen and (max-width: 100em){
+	.toc-container{ display: block !important; }
+}
+@media screen and (max-width: 65em){
+	.toc-container{ display: none !important; }
+	body{ display: block !important; }
+	html{ font-size: 13px; }
+	.main-wrapper{
+		padding:.5rem 1.25rem !important;
+	}
 }
