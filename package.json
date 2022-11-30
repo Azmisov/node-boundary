@@ -14,7 +14,7 @@
   },
   "keywords": [
     "node", "element", "position", "Range", "StaticRange",
-    "anchor", "dom", "mutation"
+    "anchor", "dom", "mutation", "frontend", "browser"
   ],
   "author": "Isaac Nygaard",
   "license": "GPL-3.0",

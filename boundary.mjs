@@ -1,4 +1,4 @@
-// Better to have these as constants for minifcation
+// Better to have these as constants for minification
 const BEFORE_OPEN = 0b1,
 	AFTER_OPEN = 0b10,
 	BEFORE_CLOSE = 0b1000,

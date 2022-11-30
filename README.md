@@ -29,12 +29,14 @@ as `boundary.min.js`.
 import { Boundary, BoundaryRange, BoundaryFlags as F} from "node-boundary";
 ```
 
+If not using a bundler, you'll need to provide a path to the actual source file, e.g.
+`./node_modules/boundary.mjs`.
+
 ### Boundary
 
-Use a {@link Boundary} object to represent a position, or *anchor*, inside the DOM. A position in
-the DOM is given by a reference {@link Boundary#node|node}, and a {@link Boundary#side|side}
-relative to that node. It is called a "boundary" because the position is tied to a node's
-inner/outer bounds. For example:
+Use a `Boundary` object to represent a position, or *anchor*, inside the DOM. A position in the DOM
+is given by a reference `node`, and a `side` relative to that node. It is called a "boundary"
+because the position is tied to a node's inner/outer bounds. For example:
 
 ```html
 A<main>B <article> </article> C</main>D
@@ -48,13 +50,13 @@ const D = new Boundary(main, BoundaryFlags.AFTER_CLOSE);
 ```
 
 The letters A-D give the possible positions relative to the `main` reference node:
-- A: {@link BoundaryFlags.BEFORE_OPEN|BEFORE_OPEN} outside the node, immediately preceding
-- B: {@link BoundaryFlags.AFTER_OPEN|AFTER_OPEN} inside the node, before any child nodes
-- C: {@link BoundaryFlags.BEFORE_CLOSE|BEFORE_CLOSE} inside the node, after any child nodes
-- D: {@link BoundaryFlags.AFTER_CLOSE|AFTER_CLOSE} outside the node, immediately following
+- A: `BEFORE_OPEN` outside the node, immediately preceding
+- B: `AFTER_OPEN` inside the node, before any child nodes
+- C: `BEFORE_CLOSE` inside the node, after any child nodes
+- D: `AFTER_CLOSE` outside the node, immediately following
 
 Two boundaries can have the same position, but differ in the reference node they are attached to.
-See {@link Boundary#isAdjacent}. For example:
+See `Boundary.isAdjacent`. For example:
 
 ```html
 <main>A B<article> </article> </main>
@@ -72,20 +74,19 @@ offset into a node's `childNodes` list. There is no way to encode *"before a nod
 of a node"*, since added/removed children will invalidate the position. The position given by a
 `Boundary` on the other hand will not change with DOM mutations.
 
-
 ### BoundaryRange
 
-Use a {@link BoundaryRange} object to represent a range between two positions. Internally, this is
-represented by a starting and ending {@link Boundary}. You may access the start/end boundary directly
-and perform operations on it, which conveniently simplifies many of the operations that you use on
+Use a `BoundaryRange` object to represent a range between two positions. Internally, this is
+represented by a starting and ending `Boundary`. You may access the start/end boundary directly and
+perform operations on it, which conveniently simplifies many of the operations that you use on
 `Range`.
 
-A {@link BoundaryRange} is akin to a `StaticRange`, in that it does not validate that the start/end
+A `BoundaryRange` is akin to a `StaticRange`, in that it does not validate that the start/end
 anchors belong to the same DOM tree or that end follows start. However, unlike `StaticRange`, you
 are still able to operate and modify the range as needed. The idea is the range can continue to be
 used despite any DOM mutations. Some of the comparison and update operations will access the current
-DOM (e.g. {@link BoundaryRange#extend|extend}, {@link BoundaryRange#toRange|toRange}, {@link
-BoundaryRange#normalize|normalize}), so just be wary of this when dealing with mutating DOM's.
+DOM (e.g. `extend`, `toRange`, `normalize`), so just be wary of this when dealing with mutating
+DOM's.
 
 While many of the `Range` interfaces methods have been implemented on `BoundaryRange`,
 some more computationally heavy ones have not. For these, you can always convert to a `Range` to
@@ -99,9 +100,7 @@ range.getClientRects();
 
 ### Examples
 
-Inserting a `span` before every node. See {@link Boundary#nextNodes|nextNodes}, {@link
-Boundary#insert|insert}.
-
+Inserting a `span` before every node:
 ```html
 <main><div></div><div></div></main>
 ```
@@ -113,8 +112,7 @@ for (const _ of b.nextNodes()){
 }
 ```
 
-Iterating all **element** boundaries within a node. See {@link
-BoundaryRange#selectNodeContents|selectNodeContents}, {@link Boundary#isEqual|isEqual}.
+Iterating all **element** boundaries within a node:
 ```html
 <main>
 	<div></div>
@@ -133,9 +131,7 @@ while (true) {
 }
 ```
 
-Getting the combined extent of two ranges. See {@link BoundaryRange#setStart|setStart}, {@link
-BoundaryRange#setEnd|setEnd}, {@link BoundaryRange#selectNode|selectNode}, {@link
-BoundaryRange#extend|extend}
+Getting the combined extent of two ranges:
 ```html
 <main>
 	<aside></aside>
@@ -158,7 +154,7 @@ r1.start.isEqual(new Boundary(main, BoundaryFlags.AFTER_OPEN)); // true
 r1.end.isEqual(new Boundary(article, BoundaryFlags.AFTER_CLOSE));  // true
 ```
 
-Checking if a position is inside a range. See {@link Boundary#compare|compare}
+Checking if a position is inside a range:
 ```html
 <main>Lorem ipsum</main>
 ```
@@ -172,7 +168,7 @@ if (b.compare(r.start) >= 0 && b.compare(r.end) <= 0)
 	console.log("inside range");
 ```
 
-Robustness of range to DOM modifications.
+Robustness of range to DOM modifications:
 ```html
 <main></main>
 ```
