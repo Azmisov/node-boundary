@@ -30,7 +30,7 @@ import { Boundary, BoundaryRange, BoundaryFlags as F} from "node-boundary";
 ```
 
 If not using a bundler, you'll need to provide a path to the actual source file, e.g.
-`./node_modules/boundary.mjs`.
+`./node_modules/node-boundary/boundary.mjs`.
 
 ### Boundary
 
