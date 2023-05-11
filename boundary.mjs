@@ -244,9 +244,9 @@ class Boundary{
 	 * [isAdjacent]{@link Boundary#isAdjacent} to check for this case instead.
 	 */
 	compare(other){
-		if (this.#node === other.#node)
-			return Math.sign(this.#side - other.#side);
 		if (this.#node && other.#node){
+			if (this.#node === other.#node)
+				return Math.sign(this.#side - other.#side);
 			const p = this.#node.compareDocumentPosition(other.#node);
 			// handle contained/contains before preceding/following, since they can combine
 			if (p & Node.DOCUMENT_POSITION_CONTAINED_BY)
@@ -272,12 +272,12 @@ class Boundary{
 	 * - {@link BoundaryFlags.POSITION_AFTER|POSITION_AFTER} if the boundary comes after `node` in DOM order
 	 */	
 	compareNode(node){
-		if (node === this.#node){
-			if (this.#side & FILTER_INSIDE)
-				return POSITION_INSIDE;
-			return this.#side > POSITION_INSIDE ? POSITION_AFTER : POSITION_BEFORE;
-		}
-		if (!this.#node){
+		if (this.#node){
+			if (node === this.#node){
+				if (this.#side & FILTER_INSIDE)
+					return POSITION_INSIDE;
+				return this.#side > POSITION_INSIDE ? POSITION_AFTER : POSITION_BEFORE;
+			}
 			const p = this.#node.compareDocumentPosition(node);
 			// handle contained/contains before preceding/following, since they can combine
 			if (p & Node.DOCUMENT_POSITION_CONTAINED_BY)
