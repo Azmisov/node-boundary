@@ -248,6 +248,11 @@ class Boundary{
 			if (this.#node === other.#node)
 				return Math.sign(this.#side - other.#side);
 			const p = this.#node.compareDocumentPosition(other.#node);
+			// disconnected trees: DOM is allowed to also set PRECEDING/FOLLOWING
+			// (alongside IMPLEMENTATION_SPECIFIC) for sort stability, so we must
+			// short-circuit here before checking those bits below
+			if (p & Node.DOCUMENT_POSITION_DISCONNECTED)
+				return null;
 			// handle contained/contains before preceding/following, since they can combine
 			if (p & Node.DOCUMENT_POSITION_CONTAINED_BY)
 				return Math.sign(this.#side - POSITION_INSIDE);
@@ -258,7 +263,7 @@ class Boundary{
 			if (p & Node.DOCUMENT_POSITION_FOLLOWING)
 				return -1;
 		}
-		// null boundary, disconnected, or implementation specific
+		// null boundary or implementation specific
 		return null;
 	}
 	/** See where the boundary sits relative to a Node. This just tells if the boundary is inside,
@@ -279,6 +284,11 @@ class Boundary{
 				return this.#side > POSITION_INSIDE ? POSITION_AFTER : POSITION_BEFORE;
 			}
 			const p = this.#node.compareDocumentPosition(node);
+			// disconnected trees: DOM is allowed to also set PRECEDING/FOLLOWING
+			// (alongside IMPLEMENTATION_SPECIFIC) for sort stability, so we must
+			// short-circuit here before checking those bits below
+			if (p & Node.DOCUMENT_POSITION_DISCONNECTED)
+				return null;
 			// handle contained/contains before preceding/following, since they can combine
 			if (p & Node.DOCUMENT_POSITION_CONTAINED_BY)
 				return this.#side & FILTER_CLOSE ? POSITION_AFTER : POSITION_BEFORE;
@@ -289,7 +299,7 @@ class Boundary{
 			if (p & Node.DOCUMENT_POSITION_FOLLOWING)
 				return POSITION_BEFORE;
 		}
-		// null boundary, disconnected, or implementation specific
+		// null boundary or implementation specific
 		return null;
 	}
 	/** Check if boundary equals another
